@@ -68,6 +68,7 @@ class _MyHomePageState extends State<MyHomePage> {
       ..files.add(await http.MultipartFile.fromPath('file', file.path, filename: basename(file.path)));
     var streamedResponse = await request.send();
     var response = await http.Response.fromStream(streamedResponse);
+    await File(_filePath).delete();
     return response.reasonPhrase;
   }
 

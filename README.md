@@ -1,16 +1,15 @@
 # file_uploader
 
-A new Flutter project.
+1. Uploads a the user's recorded file to "user-uploaded-clips" bucket on Cloudflare.
+2. POSTs the user's recorded file to Cartesia. Cartesia returns an custom voice embedding.
 
-## Getting Started
+# Usage
 
-This project is a starting point for a Flutter application.
+There are no special environmental variables or setup. 
+`flutter pub get` and then run on emulator. 
 
-A few resources to get you started if this is your first Flutter project:
+# Common issues
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+`Unhandled Exception: PlatformException(record, Recorder has not yet been created or has already been disposed., null, null)`
+`PlatformException: Recorder has not yet been created or has already been disposed.`
+Last one is a bit length problem which I am currently unable to reproduce.

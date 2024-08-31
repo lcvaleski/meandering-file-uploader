@@ -32,12 +32,14 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
 
+  final record = AudioRecorder();
+
   final String _filePath = '/Users/loganvaleski/git_projects/file_uploader/lib/file.wav';
   File myFile = File('/Users/loganvaleski/git_projects/file_uploader/lib/file.wav');
 
-  final record = AudioRecorder();
 
   Future<void> _recordFile() async {
+    final record = AudioRecorder();
     try {
       if (await record.hasPermission()) {
         await record.start(
@@ -58,12 +60,21 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Future<void> _stopRecord() async {
     record.stop();
-    record.dispose();
     _createVoice(myFile);
   }
 
   Future<String?> _createVoice(File file) async {
-    var uri = Uri.parse('http://meandering.loganvaleski.workers.dev/create-voice');
+    var uri = Uri.parse('http://localhost:8787/create-voice');
+    var request = http.MultipartRequest('POST', uri)
+      ..files.add(await http.MultipartFile.fromPath('file', file.path, filename: basename(file.path)));
+    var streamedResponse = await request.send();
+    var response = await http.Response.fromStream(streamedResponse);
+    await File(_filePath).delete();
+    return response.reasonPhrase;
+  }
+
+  Future<String?> _generateSample(File file) async {
+    var uri = Uri.parse('http://localhost:8787/generate-sample');
     var request = http.MultipartRequest('POST', uri)
       ..files.add(await http.MultipartFile.fromPath('file', file.path, filename: basename(file.path)));
     var streamedResponse = await request.send();

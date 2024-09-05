@@ -32,35 +32,49 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  final record = AudioRecorder();
-
+  AudioRecorder? _audioRecorder;
+  bool _isRecording = false;
   final String _filePath =
       '/Users/loganvaleski/git_projects/file_uploader/lib/file.wav';
-  File myFile =
-      File('/Users/loganvaleski/git_projects/file_uploader/lib/file.wav');
+
+  @override
+  void initState() {
+    super.initState();
+    _audioRecorder = AudioRecorder();
+  }
+
+  @override
+  void dispose() {
+    _audioRecorder?.dispose();
+    super.dispose();
+  }
 
   Future<void> _recordFile() async {
-    final record = AudioRecorder();
+    if (_isRecording) return;
+
     try {
-      if (await record.hasPermission()) {
-        await record.start(
-            const RecordConfig(
-              encoder: AudioEncoder.wav,
-            ),
-            path: _filePath);
+      if (await _audioRecorder!.hasPermission()) {
+        await _audioRecorder!.start(
+          const RecordConfig(encoder: AudioEncoder.wav),
+          path: _filePath,
+        );
+        setState(() => _isRecording = true);
       } else {
         print("Permission not granted");
       }
-    } on PlatformException catch (e) {
-      print("PlatformException: ${e.message}");
     } catch (e) {
-      print("An error occurred: $e");
+      print("An error occurred while starting recording: $e");
     }
   }
 
-  Future<void> _stopRecord() async {
-    record.stop();
-    print(await _createVoice(myFile));
+  List<double> _parseEmbedding(String jsonString) {
+    Map<String, dynamic> jsonResponse = json.decode(jsonString);
+    List<dynamic> embeddingList = jsonResponse['embedding'];
+    return embeddingList.map((e) {
+      if (e is double) return e;
+      if (e is int) return e.toDouble();
+      return double.parse(e.toString());
+    }).toList();
   }
 
   Future<String?> _createVoice(File file) async {
@@ -74,10 +88,10 @@ class _MyHomePageState extends State<MyHomePage> {
     return response.body;
   }
 
-  Future<Object> _generateSample() async {
+  Future<Object> _generateSample(List<double> embedding) async {
     final msg = jsonEncode({
-      'transcript': 'Hello world',
-      'id': 'a0e99841-438c-4a64-b679-ae501e7d6091'
+      'transcript': 'Hey there, my name is Logan Valeski and I am a clone',
+      'id': embedding
     });
     final response = await http.post(
         Uri.parse('http://localhost:8787/generate-sample'),
@@ -88,8 +102,27 @@ class _MyHomePageState extends State<MyHomePage> {
     } else {
       return "Error ${response.statusCode}: ${response.body}";
     }
-    await File(_filePath).delete();
     return response.statusCode;
+  }
+
+  Future<void> _stopRecord() async {
+    if (!_isRecording) return;
+
+    try {
+      final path = await _audioRecorder!.stop();
+      setState(() => _isRecording = false);
+
+      if (path != null) {
+        final file = File(path);
+        final embeddingJsonString = await _createVoice(file);
+        if (embeddingJsonString != null) {
+          List<double> embedding = _parseEmbedding(embeddingJsonString);
+          print(await _generateSample(embedding));
+        }
+      }
+    } catch (e) {
+      print("An error occurred while stopping recording: $e");
+    }
   }
 
   @override
@@ -102,9 +135,13 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Column(
           children: [
             ElevatedButton(
-                onPressed: _recordFile, child: const Text("Start recording")),
+              onPressed: _isRecording ? null : _recordFile,
+              child: Text(_isRecording ? "Recording..." : "Start recording"),
+            ),
             ElevatedButton(
-                onPressed: _stopRecord, child: const Text("Stop recording")),
+              onPressed: _isRecording ? _stopRecord : null,
+              child: const Text("Stop recording"),
+            ),
           ],
         ),
       ),

@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -31,12 +32,12 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-
   final record = AudioRecorder();
 
-  final String _filePath = '/Users/loganvaleski/git_projects/file_uploader/lib/file.wav';
-  File myFile = File('/Users/loganvaleski/git_projects/file_uploader/lib/file.wav');
-
+  final String _filePath =
+      '/Users/loganvaleski/git_projects/file_uploader/lib/file.wav';
+  File myFile =
+      File('/Users/loganvaleski/git_projects/file_uploader/lib/file.wav');
 
   Future<void> _recordFile() async {
     final record = AudioRecorder();
@@ -46,8 +47,7 @@ class _MyHomePageState extends State<MyHomePage> {
             const RecordConfig(
               encoder: AudioEncoder.wav,
             ),
-            path: _filePath
-        );
+            path: _filePath);
       } else {
         print("Permission not granted");
       }
@@ -60,44 +60,54 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Future<void> _stopRecord() async {
     record.stop();
-    _createVoice(myFile);
+    print(await _createVoice(myFile));
   }
 
   Future<String?> _createVoice(File file) async {
     var uri = Uri.parse('http://localhost:8787/create-voice');
     var request = http.MultipartRequest('POST', uri)
-      ..files.add(await http.MultipartFile.fromPath('file', file.path, filename: basename(file.path)));
+      ..files.add(await http.MultipartFile.fromPath('file', file.path,
+          filename: basename(file.path)));
     var streamedResponse = await request.send();
     var response = await http.Response.fromStream(streamedResponse);
     await File(_filePath).delete();
-    return response.reasonPhrase;
+    return response.body;
   }
 
-  Future<String?> _generateSample(File file) async {
-    var uri = Uri.parse('http://localhost:8787/generate-sample');
-    var request = http.MultipartRequest('POST', uri)
-      ..files.add(await http.MultipartFile.fromPath('file', file.path, filename: basename(file.path)));
-    var streamedResponse = await request.send();
-    var response = await http.Response.fromStream(streamedResponse);
+  Future<Object> _generateSample() async {
+    final msg = jsonEncode({
+      'transcript': 'Hello world',
+      'id': 'a0e99841-438c-4a64-b679-ae501e7d6091'
+    });
+    final response = await http.post(
+        Uri.parse('http://localhost:8787/generate-sample'),
+        headers: {'Content-Type': 'application/json'},
+        body: msg);
+    if (response.statusCode == 200) {
+      print(response.body);
+    } else {
+      return "Error ${response.statusCode}: ${response.body}";
+    }
     await File(_filePath).delete();
-    return response.reasonPhrase;
+    return response.statusCode;
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.title) ,
+        title: Text(widget.title),
       ),
-      body:
-        Center(
-          child: Column(
-            children: [
-              ElevatedButton(onPressed: _recordFile, child: const Text("Start recording")),
-              ElevatedButton(onPressed: _stopRecord, child: const Text("Stop recording")),
-            ],
-          ),
+      body: Center(
+        child: Column(
+          children: [
+            ElevatedButton(
+                onPressed: _recordFile, child: const Text("Start recording")),
+            ElevatedButton(
+                onPressed: _stopRecord, child: const Text("Stop recording")),
+          ],
         ),
+      ),
     );
   }
 }

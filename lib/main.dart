@@ -154,8 +154,11 @@ class _MyHomePageState extends State<MyHomePage> {
                 onPressed: _textSegmentRoute,
                 child: const Text("Test text segment route"),
             ),
-            const Text(
-                'Hi there! I’m cloning my voice on Cartesia. Cartesias Sonic model offers the fastest voice cloning on the planet—just record 10 to 15 seconds of audio, and youre all done. To clone your own voice, you can head over to the Cartesia playground at play.cartesia.ai.')
+            const Padding(
+              padding: EdgeInsets.all(30),
+              child: Text(
+                  'Hi there! I’m cloning my voice on Cartesia. Cartesias Sonic model offers the fastest voice cloning on the planet—just record 10 to 15 seconds of audio, and youre all done. To clone your own voice, you can head over to the Cartesia playground at play.cartesia.ai.'),
+            )
           ],
         ),
       ),

@@ -90,11 +90,11 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Future<Object> _generateSample(List<double> embedding) async {
     final msg = jsonEncode({
-      'transcript': 'Hey there, my name is Logan Valeski and I am a clone',
+      'transcript': 'My name is Giacomo and I like the Jets, which is a hard thing to like.',
       'id': embedding
     });
     final response = await http.post(
-        Uri.parse('http://localhost:8787/generate-sample'),
+        Uri.parse('http://localhost:8787/generate-audio-segment'),
         headers: {'Content-Type': 'application/json'},
         body: msg);
     if (response.statusCode == 200) {
@@ -124,6 +124,13 @@ class _MyHomePageState extends State<MyHomePage> {
       print("An error occurred while stopping recording: $e");
     }
   }
+  
+  Future<String> _textSegmentRoute() async {
+    var uri = Uri.parse('http://localhost:8787/generate-text-segment');
+    var request = await http.post(uri);
+    print(request.body);
+    return request.body;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -138,10 +145,17 @@ class _MyHomePageState extends State<MyHomePage> {
               onPressed: _isRecording ? null : _recordFile,
               child: Text(_isRecording ? "Recording..." : "Start recording"),
             ),
+
             ElevatedButton(
               onPressed: _isRecording ? _stopRecord : null,
               child: const Text("Stop recording"),
             ),
+            ElevatedButton(
+                onPressed: _textSegmentRoute,
+                child: const Text("Test text segment route"),
+            ),
+            const Text(
+                'Hi there! I’m cloning my voice on Cartesia. Cartesias Sonic model offers the fastest voice cloning on the planet—just record 10 to 15 seconds of audio, and youre all done. To clone your own voice, you can head over to the Cartesia playground at play.cartesia.ai.')
           ],
         ),
       ),

@@ -17,7 +17,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const MaterialApp(
-      home: MyHomePage(title: 'Cartesia voice clone'),
+      home: MyHomePage(title: 'Cartesia voice clone testing'),
     );
   }
 }
@@ -145,20 +145,24 @@ class _MyHomePageState extends State<MyHomePage> {
               onPressed: _isRecording ? null : _recordFile,
               child: Text(_isRecording ? "Recording..." : "Start recording"),
             ),
-
             ElevatedButton(
               onPressed: _isRecording ? _stopRecord : null,
               child: const Text("Stop recording"),
+            ),
+            const Padding(
+              padding: EdgeInsets.all(15),
+              child: Text(
+                  'After stop, check R2 bucket for the file'),
             ),
             ElevatedButton(
                 onPressed: _textSegmentRoute,
                 child: const Text("Test text segment route"),
             ),
             const Padding(
-              padding: EdgeInsets.all(30),
+              padding: EdgeInsets.all(15),
               child: Text(
                   'Hi there! I’m cloning my voice on Cartesia. Cartesias Sonic model offers the fastest voice cloning on the planet—just record 10 to 15 seconds of audio, and youre all done. To clone your own voice, you can head over to the Cartesia playground at play.cartesia.ai.'),
-            )
+            ),
           ],
         ),
       ),

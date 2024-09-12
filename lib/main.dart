@@ -90,7 +90,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Future<Object> _generateSample(List<double> embedding) async {
     final msg = jsonEncode({
-      'transcript': 'My name is Giacomo and I like the Jets, which is a hard thing to like.',
+      'transcript': 'This is a clone of my voice. I hope no one makes me say some weird shit.',
       'id': embedding
     });
     final response = await http.post(
@@ -126,8 +126,11 @@ class _MyHomePageState extends State<MyHomePage> {
   }
   
   Future<String> _textSegmentRoute() async {
+    final msg = jsonEncode({
+      'prompt': 'Say hawk tuah',
+    });
     var uri = Uri.parse('http://localhost:8787/generate-text-segment');
-    var request = await http.post(uri);
+    var request = await http.post(uri, body: msg);
     print(request.body);
     return request.body;
   }

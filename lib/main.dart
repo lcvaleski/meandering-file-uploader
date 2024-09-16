@@ -78,7 +78,8 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future<String?> _createVoice(File file) async {
-    var uri = Uri.parse('http://localhost:8787/create-voice');
+    var uri = Uri.parse(
+        'http://localhost:8787/${const String.fromEnvironment('CREATE_VOICE_ROUTE')}');
     var request = http.MultipartRequest('POST', uri)
       ..files.add(await http.MultipartFile.fromPath('file', file.path,
           filename: basename(file.path)));
@@ -90,11 +91,13 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Future<Object> _generateSample(List<double> embedding) async {
     final msg = jsonEncode({
-      'transcript': 'This is a clone of my voice. I hope no one makes me say some weird shit.',
+      'transcript':
+          'This is a clone of my voice. I hope no one makes me say some weird shit.',
       'id': embedding
     });
     final response = await http.post(
-        Uri.parse('http://localhost:8787/generate-audio-segment'),
+        Uri.parse(
+            'http://localhost:8787/${const String.fromEnvironment('GENERATE_AUDIO_SEGMENT_ROUTE')}'),
         headers: {'Content-Type': 'application/json'},
         body: msg);
     if (response.statusCode == 200) {
@@ -124,14 +127,16 @@ class _MyHomePageState extends State<MyHomePage> {
       print("An error occurred while stopping recording: $e");
     }
   }
-  
-  Future<String> _textSegmentRoute() async {
+
+  Future<String> _generateStoryRoute() async {
     final msg = jsonEncode({
-      'prompt': 'Say hawk tuah',
+      'story_type': 'meandering',
+      'segments': 2,
+      'voice': 'male',
     });
-    var uri = Uri.parse('http://localhost:8787/generate-text-segment');
+    var uri = Uri.parse(
+        'http://localhost:8787/${const String.fromEnvironment('GENERATE_STORY_ROUTE')}');
     var request = await http.post(uri, body: msg);
-    print(request.body);
     return request.body;
   }
 
@@ -154,12 +159,11 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
             const Padding(
               padding: EdgeInsets.all(15),
-              child: Text(
-                  'After stop, check R2 bucket for the file'),
+              child: Text('After stop, check R2 bucket for the file'),
             ),
             ElevatedButton(
-                onPressed: _textSegmentRoute,
-                child: const Text("Test text segment route"),
+              onPressed: _generateStoryRoute,
+              child: const Text("Test generate story route"),
             ),
             const Padding(
               padding: EdgeInsets.all(15),
